@@ -39,8 +39,13 @@ async def handler(websocket):
 
   open_sockets.append(websocket)
 
-  async for message in websocket:
-    print(message)
+  while True:
+    try:
+      message = await websocket.recv()
+      print(message)
+    except websockets.ConnectionClosedOK:
+      open_sockets.remove(websocket)
+      break
 
 
 async def init_sockets():
@@ -77,12 +82,19 @@ async def init_pipe():
     }
 
     for s in open_sockets:
-      s.send(json.dumps(message))
-
+      try:
+        await s.send(json.dumps(message))
+      except:
+        open_sockets.remove(s)
 
     # writer.write(line)
 
 
+async def main():
+  await asyncio.gather(
+    asyncio.create_task(init_sockets()),
+    asyncio.create_task(init_pipe())
+  )
+
 if __name__ == "__main__":
-    asyncio.run(init_sockets())
-    asyncio.run(init_pipe())
+    asyncio.run(main())

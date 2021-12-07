@@ -1,19 +1,28 @@
-<script>
-  const socketUrl = 'ws://localhost:8001/'
-
-  const socket = new WebSocket(socketUrl);
-
-  // Connection opened
-  socket.addEventListener('open', function (event) {
-      socket.send('Hello Server!');
-  });
-
-  // Listen for messages
-  socket.addEventListener('message', function (event) {
-      console.log('Message from server ', event);
-  });
-
-</script>
 <body>
   <img width="32" height="24" />
+  <script>
+    const socketUrl = 'ws://localhost:8001/'
+
+    const socket = new WebSocket(socketUrl);
+
+    const imageNode = document.querySelector('img')
+
+    // Connection opened
+    socket.addEventListener('open', function (event) {
+        socket.send('Hello Server!');
+    });
+
+
+    // Listen for messages
+    socket.addEventListener('message', function (event) {
+      console.log('Message from server ', event.data);
+
+      const message = JSON.parse(event.data)
+      console.log({ type: message.type })
+      if (message.type === 'image') {
+        console.log(message.data)
+        imageNode.src = message.data.image
+      }
+    });
+  </script>
 </body>
