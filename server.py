@@ -8,14 +8,22 @@ import json
 import websockets
 import numpy as np
 import matplotlib.pyplot as plt
+from datetime import datetime
 
 image_shape = (24, 32)
 
-plt.ion() # enables interactive plotting
-fig,ax = plt.subplots(figsize=(12, 7))
+# plt.ion() # enables interactive plotting
+fig, ax = plt.subplots(figsize=(5, 3))
 image = ax.imshow(np.zeros(image_shape), vmin=0, vmax=60) # start plot with zeros
 cbar = fig.colorbar(image) # setup colorbar for temps
 cbar.set_label('Temperature [$^{\circ}$C]', fontsize=14)
+
+def get_current_time_str():
+  # datetime object containing current date and time
+  now = datetime.now()
+# dd/mm/YY H:M:S
+dt_string = datetime.now().strftime("%H:%M:%S")
+print("date and time =", dt_string)
 
 def create_image(line):
 
@@ -23,6 +31,10 @@ def create_image(line):
   data_array = (np.reshape(data_array, image_shape))
   image.set_data(np.fliplr(data_array))
   image.set_clim(vmin=np.min(data_array), vmax=np.max(data_array))
+
+  time_str = datetime.now().strftime("%H:%M:%S")
+
+  ax.text(35, 26, time_str, bbox={'facecolor': '#e77c63', 'alpha': 0.5, 'pad': 3})
 
   plt.pause(0.001)
 
@@ -39,13 +51,20 @@ async def handler(websocket):
 
   open_sockets.append(websocket)
 
+  await websocket.wait_closed()
+  open_sockets.remove(websocket)
+
+
+  """ async for message in websocket:
+    await process(message)
+
   while True:
     try:
       message = await websocket.recv()
       print(message)
     except websockets.ConnectionClosedOK:
       open_sockets.remove(websocket)
-      break
+      break """
 
 
 async def init_sockets():
